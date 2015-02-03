@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.draw_lessons.app.R;
 import com.draw_lessons.app.actions.Cleaner;
 import com.draw_lessons.app.activities.activity_draw;
+import com.draw_lessons.app.extras.Circle;
 import com.draw_lessons.app.extras.SavePaths;
 
 import java.util.ArrayList;
@@ -32,12 +33,11 @@ import java.util.ArrayList;
 public class Cnv extends View{
 
     /*
-        Constantes de tamaño de la brocha
+     * Constantes de tamaño de la brocha
      */
     public static final int SIZE_SMALL = 5;
     public static final int SIZE_MEDIUM = 8;
     public static final int SIZE_MAX = 12;
-    private int rubIcon; // id de referencia al icono de la papelera
 
 
     // Herramientas del canvas
@@ -47,10 +47,10 @@ public class Cnv extends View{
     public static boolean Eraser = false;
 
 
-    private Canvas cnv; //Objeto Canvas para re-renderizar el View
-    private Bitmap bmp; //Imagen que queda dibujada sobre nuestro Canvas
+    public static Canvas cnv; //Objeto Canvas para re-renderizar el View
     public static Paint p; //Brocha de dibujado principal
-    private Path mPa; //Trazo principal de dibujo
+    public static  Bitmap bmp; //Imagen que queda dibujada sobre nuestro Canvas
+    public static Path mPa; //Trazo principal de dibujo
 
 
     private int brushSize; // Variable para guardar el tamaño actual del Paint
@@ -82,16 +82,19 @@ public class Cnv extends View{
      */
     public static Bitmap compassBmp;
     public static boolean compasLayer = false;
-    public static boolean compassT1=false,compassT2=false;
+    public static boolean compassT1=false,compassT2=false,compassT3=false;
+    public static boolean circleFixed=false;
 
     private float compassX1=0.0F, compassX2=0.0F, compassY1=0.0F, compassY2=0.0F;
+    private Path ePa = new Path();
+    private Path iPa = new Path();
+    private Path path = new Path();
 
-
-   /*
+    /*
     * Variables inter-herramientas
     */
-    private boolean accepted=false; //especifica si está aceptado o no el trazo realizado
-    private boolean drawing=true; // especifica si está en fase de dibujado al utilizar una herramienta
+    public static boolean accepted=false; //especifica si está aceptado o no el trazo realizado
+    public static boolean drawing=true; // especifica si está en fase de dibujado al utilizar una herramienta
     private double p1=0.00d; // variabls para calcular una distancia
     private double p2=0.00d;
 
@@ -169,7 +172,6 @@ public class Cnv extends View{
 
 
 
-
     /**
      * Método que sobre-escribe lo que ocurre al generar un evento de tipo Touch
      */
@@ -190,7 +192,7 @@ public class Cnv extends View{
             this.onHandMade(event);
         }
         else if (this.Compass==true){
-            this.onCompassTouch2(event);
+            this.onCompassTouch(event);
         }else if(this.Ruler==true){
             this.onRulerTouch(event);
         }else if (this.Eraser==true){
@@ -230,6 +232,7 @@ public class Cnv extends View{
 
                     case MotionEvent.ACTION_MOVE:
                         if (p1 < p2) {
+
                             this.rulerX1 = event.getX();
                             this.rulerY1 = event.getY();
                             tmpCNV.drawLine(this.rulerX1, this.rulerY1, this.rulerX2, this.rulerY2, this.p);
@@ -330,6 +333,7 @@ public class Cnv extends View{
         }else if (this.drawing==false){
 
             if (accepted) {
+
                 this.mPa.moveTo(this.rulerX1, this.rulerY1);
                 this.mPa.lineTo(this.rulerX2, this.rulerY2);
                 this.cnv.drawPath(this.mPa, this.p);
@@ -381,72 +385,11 @@ public class Cnv extends View{
         this.onRulerTouch(null);
         this.p1=0.00d;
         this.p2=0.00d;
-    }
 
-
-    public static boolean compassT3=false;
-
-    public void acceptCompassRadius(){
-
-        Cnv.compassT3 = true;
-        this.onCompassTouch2(null);
-
-    }
-
-
-    /**
-     * aceptación final de el uso de el compás
-     */
-    public void acceptCompas(){
-
-        this.cnv.drawPath(this.path,this.p);
-        this.Trazos.add(this.path);
-        this.path= new Path();
-
-        Cnv.compassT3=false;
-        Cnv.compassT2=false;
-        Cnv.compassT1=false;
-
-        Cnv.compasLayer=false;
-        Cnv.compassBmp = null;
-        this.circleFixed=false;
-
-        this.invalidate();
-    }
-
-    public void dismissCompass(){
-        this.path = new Path();
         this.ePa = new Path();
         this.iPa = new Path();
 
-        Cnv.compassT3=false;
-        Cnv.compassT2=false;
-        Cnv.compassT1=false;
-
-        Cnv.compasLayer=false;
-        Cnv.compassBmp = null;
-        this.circleFixed=false;
-
-        this.invalidate();
-
-    }
-
-
-    public void dismissCompassRadius(){
-
-        this.path = new Path();
-        this.ePa = new Path();
-        this.iPa = new Path();
-
-        Cnv.compassT3=false;
-        Cnv.compassT2=false;
-        Cnv.compassT1=false;
-
-        Cnv.compasLayer=false;
-        Cnv.compassBmp = null;
-        this.circleFixed=false;
-
-        this.invalidate();
+        this.cnv = new Canvas(this.bmp);
     }
 
 
@@ -497,33 +440,122 @@ public class Cnv extends View{
 
     }
 
-    private boolean circleFixed=false;
-    Path ePa = new Path();
-    Path iPa = new Path();
 
-    Path path = new Path();
 
-    public boolean getCircleFixed(){
-        return this.circleFixed;
+
+
+
+    public void acceptCompassRadius(){
+
+        Cnv.compassT3 = true;
+        this.onCompassTouch(null);
+
     }
 
-    public void setCircleFixed(boolean f){
-        this.circleFixed = f;
+
+    private ArrayList<Circle>Circles = new ArrayList<Circle>();
+
+    /**
+     * aceptación final de el uso de el compás
+     */
+    public void acceptCompas(){
+
+        float r =(float)this.getDistance(this.compassX1,this.compassY1,this.compassX2,this.compassY2);
+        Circle c = new Circle(this.path,
+                this.compassX1,this.compassY1,
+                this.compassX2,this.compassY2,r);
+
+        this.Circles.add(c);
+        this.Trazos.add(this.path);
+
+
+        this.ePa = new Path();
+        this.iPa = new Path();
+        this.path= new Path();
+
+        Cnv.compassT3=false;
+        Cnv.compassT2=false;
+        Cnv.compassT1=false;
+
+        Cnv.compasLayer=false;
+        Cnv.compassBmp = null;
+        this.circleFixed=false;
+
+        this.cnv = new Canvas(this.bmp);
+        this.p.setStrokeWidth(SIZE_SMALL);
+
+        activity_draw.i1.setVisible(false);
+        activity_draw.i2.setVisible(false);
+
+        this.invalidate();
+    }
+
+    /**
+     * Borra el trazo de el compas
+     * una vez se está dibujando
+     */
+    public void dismissCompass(){
+
+        float r =(float)this.getDistance(this.compassX1,this.compassY1,this.compassX2,this.compassY2);
+        Circle c = new Circle(this.path,
+                this.compassX1,this.compassY1,
+                this.compassX2,this.compassY2,r);
+
+        this.Circles.add(c);
+        this.Trazos.add(this.path);
+
+        this.Undo();
+
+        this.path = new Path();
+        this.ePa = new Path();
+        this.iPa = new Path();
+
+        this.p.setStrokeWidth(SIZE_SMALL);
+
+
+       // Cnv.compassT3=false;
+       // Cnv.compassT2=false;
+       // Cnv.compassT1=false;
+
+       // Cnv.compasLayer=false;
+       // Cnv.compassBmp = null;
+       // this.circleFixed=false;
+
+        this.invalidate();
+
     }
 
 
-    //////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////
+    public void dismissCompassRadius(){
+
+        this.path = new Path();
+        this.ePa = new Path();
+        this.iPa = new Path();
+        this.p.setStrokeWidth(SIZE_SMALL);
+
+        Cnv.compassT3=false;
+        Cnv.compassT2=false;
+        Cnv.compassT1=false;
+
+        Cnv.compasLayer=false;
+        Cnv.compassBmp = null;
+        this.circleFixed=false;
+
+        this.invalidate();
+    }
+
+
 
     /**
      * Método definitivo de compás
      * @param event
      */
-    public void onCompassTouch2(MotionEvent event){
+    public void onCompassTouch(MotionEvent event){
 
         Cnv.compassBmp = Bitmap.createBitmap(this.resX,this.resY,Config.ARGB_4444);
         Canvas tmpCnv = new Canvas(Cnv.compassBmp);
+
+         tmpCnv.drawColor(Color.TRANSPARENT);
 
         Paint tmpP1 = new Paint();
         tmpP1.setStyle(Paint.Style.STROKE);
@@ -536,8 +568,7 @@ public class Cnv extends View{
         paint.setColor(0x33BBBBBB);
 
         Paint tmpP2 = new Paint();
-        tmpP2.setColor(Color.RED);
-
+        tmpP2.setColor(Color.TRANSPARENT);
 
 
         if(this.drawing==true){
@@ -549,55 +580,48 @@ public class Cnv extends View{
                     tmpCnv.drawLine(this.compassX1, this.compassY1, this.compassX2, this.compassY2, paint);
                     this.circleFixed=true;
                 }else{
+                    this.p.setStrokeWidth(30);
                     tmpP2.setStyle(Paint.Style.STROKE);
                     ePa.addCircle(this.compassX1,this.compassY1,r,Direction.CCW);
-                    tmpCnv.drawPath(ePa,tmpP2);
+                    this.cnv.drawPath(ePa, tmpP2);
 
                     tmpP2.setStyle(Paint.Style.FILL);
                     iPa.addCircle(this.compassX1,this.compassY1,(r-SIZE_SMALL),Direction.CCW);
-                    tmpCnv.drawPath(iPa,tmpP2);
+                    this.cnv.drawPath(iPa, tmpP2);
 
-                    tmpCnv.clipPath(ePa, Region.Op.REPLACE);
-                    tmpCnv.clipPath(iPa, Region.Op.DIFFERENCE);
+                    this.cnv.clipPath(ePa, Region.Op.REPLACE);
+                    this.cnv.clipPath(iPa, Region.Op.DIFFERENCE);
 
                     this.invalidate();
                    switch(event.getAction()){
 
                        case MotionEvent.ACTION_DOWN:
                            tmpCnv.drawCircle(this.compassX1,this.compassY1,r,paint);
-                           tmpCnv.drawLine(this.compassX1, this.compassY1, this.compassX2, this.compassY2, paint);
 
                            this.path.moveTo(this.compassX1,this.compassY1);
                            this.path.lineTo(event.getX(),event.getY());
-                           tmpCnv.drawPath(path,this.p);
-
+                           this.cnv.drawPath(path,this.p);
                        break;
 
                        case MotionEvent.ACTION_MOVE:
                            tmpCnv.drawCircle(this.compassX1,this.compassY1,r,paint);
-                           tmpCnv.drawLine(this.compassX1, this.compassY1, this.compassX2, this.compassY2, paint);
 
                            this.path.moveTo(this.compassX1,this.compassY1);
                            this.path.lineTo(event.getX(),event.getY());
-                           tmpCnv.drawPath(path,this.p);
-
+                           this.cnv.drawPath(path,this.p);
                            break;
 
                        case MotionEvent.ACTION_UP:
                            tmpCnv.drawCircle(this.compassX1,this.compassY1,r,paint);
-                           tmpCnv.drawLine(this.compassX1, this.compassY1, this.compassX2, this.compassY2, paint);
 
                            this.path.moveTo(this.compassX1,this.compassY1);
                            this.path.lineTo(event.getX(),event.getY());
-                           tmpCnv.drawPath(path,this.p);
-
+                           this.cnv.drawPath(path,this.p);
                            break;
-
                     }
 
-                    this.invalidate();
+                    //this.invalidate();
                 }
-
 
                 this.invalidate();
             }
@@ -862,6 +886,7 @@ public class Cnv extends View{
             this.cnv.drawColor(0xFFFFFFFF);
             this.Trazos = new ArrayList<Path>();
             this.invalidate();
+
         Toast.makeText(this.getContext(),"Nuevo Lienzo",Toast.LENGTH_SHORT).show();
     }
 
@@ -886,10 +911,51 @@ public class Cnv extends View{
                     this.p.setStrokeWidth(this.SIZE_MAX);
 
                     this.cnv.drawPath(this.Trazos.get(c2), this.p);
-                }else {
+                }
+                else if (this.isDoneWithCircle(p)){
+
+                    int i = 0;
+                    int pos = 0;
+                    while(i<this.Circles.size()){
+                        if(this.Circles.get(i).getPath().hashCode() == p.hashCode() ){
+                         pos = i;
+                            break;
+                        }
+                        i++;
+                    }
+
+                    Circle cir = this.Circles.get(pos);
+
+                    Paint tmpP2 = new Paint();
+                    tmpP2.setColor(Color.TRANSPARENT);
+
+                    this.p.setStrokeWidth(30);
+                    tmpP2.setStyle(Paint.Style.STROKE);
+                    ePa.addCircle(cir.getX1(),cir.getY1(),cir.getR(),Direction.CCW);
+                    this.cnv.drawPath(ePa, tmpP2);
+
+                    tmpP2.setStyle(Paint.Style.FILL);
+                    iPa.addCircle(cir.getX1(),cir.getY1(),(cir.getR()-SIZE_SMALL),Direction.CCW);
+                    this.cnv.drawPath(iPa, tmpP2);
+
+                    this.cnv.clipPath(ePa, Region.Op.REPLACE);
+                    this.cnv.clipPath(iPa, Region.Op.DIFFERENCE);
+
+                    this.cnv.drawPath(p,this.p);
+                    //Bitmap
+                    this.invalidate();
+
+                    this.ePa = new Path();
+                    this.iPa = new Path();
+                    this.cnv = new Canvas(this.bmp);
+                    this.p.setStrokeWidth(SIZE_SMALL);
+                    this.invalidate();
+
+
+                }
+                else {
                     this.p.setColor(this.getResources().getColor(R.color.stroke_color));
                     this.p.setStrokeWidth(this.SIZE_SMALL);
-
                     this.cnv.drawPath(this.Trazos.get(c2), this.p);
 
                 }
@@ -909,6 +975,21 @@ public class Cnv extends View{
 
 
 
+    public boolean isDoneWithCircle(Path p){
+        boolean done=false;
+        int c=0;
+
+        while(c < this.Circles.size() ){
+            Path p2 = this.Circles.get(c).getPath();
+            if(p2.hashCode() == p.hashCode()){
+                done = true;
+            }
+            c++;
+        }
+
+        return done;
+    }
+
 
     /**
      * Compreuab si un Path ha sido
@@ -927,6 +1008,7 @@ public class Cnv extends View{
             }
             c++;
         }
+
         return done;
 
     }
@@ -937,17 +1019,20 @@ public class Cnv extends View{
      * ya des-hechos de el Array que los almacena
      */
     public void cleanPaths(){
-        Cleaner c= new Cleaner(this.doBack,this.Trazos);
+        Cleaner c = new Cleaner(this.doBack,this.Trazos);
         this.Trazos = c.getTrazos();
         this.doBack = 1;
         this.isUnDone=false;
     }
 
 
-	/* 
+
+
+
+	/*
 	 * -------------------
 	 * -----------------
-	 * Getters y Settrs 
+	 * Getters y Settrs
 	 * -----------------
 	 * -------------------
 	 */
@@ -982,22 +1067,36 @@ public class Cnv extends View{
 
 
 
-    public void setRubishIcon(int rubish){
-        this.rubIcon = rubish;
-    }
+   // public void setRubishIcon(int rubish){
+      //  this.rubIcon = rubish;
+    //}
 
 
     /**
-     * get the Bitmap of canvas
+     * devuelve el Bitmap del canvas
      */
    public Bitmap getBitmapt(){
        return this.bmp;
    }
 
 
+    /**
+     * devuelve el canvas del View
+     * @return
+     */
    public Canvas getCnv(){
        return this.cnv;
    }
+
+    /**
+     * devuelve la variable CircleFixed
+     * que indida si esta fijado el radio
+     * del compás para dibujar un circulo
+     * @return
+     */
+    public boolean getCircleFixed(){
+        return this.circleFixed;
+    }
 
 
     public ArrayList<Path> getTrazos() {

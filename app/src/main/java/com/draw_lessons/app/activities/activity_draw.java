@@ -122,7 +122,7 @@ public class activity_draw extends ActionBarActivity {
         this.canvas.setResY(y);
         this.canvas.prepareCancas();
         this.canvas.setStrokeSize(canvas.SIZE_SMALL);
-        this.canvas.setRubishIcon(R.drawable.rubish);
+       // this.canvas.setRubishIcon(R.drawable.rubish);
 
 
         this.l1.addView(canvas);

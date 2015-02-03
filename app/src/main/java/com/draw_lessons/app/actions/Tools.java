@@ -1,6 +1,8 @@
 package com.draw_lessons.app.actions;
 
 
+import android.graphics.Canvas;
+
 import com.draw_lessons.app.customView.Cnv;
 
 /**
@@ -26,10 +28,15 @@ public class Tools {
                Cnv.Eraser=false;
                Cnv.Ruler=true;
 
-               Cnv.compasLayer = false;
+               Cnv.compasLayer=false;
                Cnv.compassBmp = null;
                Cnv.compassT1 = false;
                Cnv.compassT2 = false;
+               Cnv.compassT3 = false;
+               Cnv.circleFixed = false;
+               Cnv.drawing=true;
+               Cnv.cnv = new Canvas(Cnv.bmp);
+
 
                Cnv.p.setColor(0xFF000000);
                Cnv.p.setStrokeWidth(Cnv.SIZE_SMALL);
@@ -60,6 +67,8 @@ public class Tools {
                 Cnv.rulerBmp = null;
                 Cnv.rulerT1 = false;
                 Cnv.rulerT2 = false;
+                Cnv.accepted=false;
+
 
                 Cnv.p.setColor(0xFF000000);
                 Cnv.p.setStrokeWidth(Cnv.SIZE_SMALL);
@@ -90,11 +99,16 @@ public class Tools {
                 Cnv.compassBmp = null;
                 Cnv.compassT1 = false;
                 Cnv.compassT2 = false;
+                Cnv.compassT3 = false;
+                Cnv.circleFixed = false;
+                Cnv.drawing=true;
+                Cnv.cnv = new Canvas(Cnv.bmp);
 
                 Cnv.rulerLayer = false;
                 Cnv.rulerBmp = null;
                 Cnv.rulerT1 = false;
                 Cnv.rulerT2 = false;
+                Cnv.accepted=false;
 
                 Cnv.p.setColor(0xFF000000);
                 Cnv.p.setStrokeWidth(Cnv.SIZE_SMALL);
@@ -124,11 +138,18 @@ public class Tools {
                 Cnv.compassBmp = null;
                 Cnv.compassT1 = false;
                 Cnv.compassT2 = false;
+                Cnv.compassT3 = false;
+                Cnv.circleFixed = false;
+                Cnv.drawing=true;
+                Cnv.cnv = new Canvas(Cnv.bmp);
 
                 Cnv.rulerLayer = false;
                 Cnv.rulerBmp = null;
                 Cnv.rulerT1 = false;
                 Cnv.rulerT2 = false;
+                Cnv.accepted=false;
+
+                Cnv.cnv = new Canvas(Cnv.bmp);
 
                 Cnv.p.setColor(0xFFFFFFFF);
                 Cnv.p.setStrokeWidth(Cnv.SIZE_SMALL);
